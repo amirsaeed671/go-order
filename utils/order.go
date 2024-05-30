@@ -23,13 +23,13 @@ func (o *Order) AddItem(item Item, user *User) {
 
 	o.Items = newItems
 	o.Total += item.Price
+	user.Balance -= item.Price
 }
 
 func (o *Order) PlaceOrder(user *User) {
 	o.Status = "Completed"
 
 	o.PrintReceipt()
-	user.Balance -= o.Total
 }
 
 func (o *Order) PrintReceipt() {

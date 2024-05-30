@@ -1,18 +1,45 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"golang/utils"
+	"io"
+	"net/http"
 	"os"
 )
 
+type ResponseItem struct {
+	Id    int    `json:"id"`
+	Name  string `json:"name"`
+	Price int    `json:"price"`
+}
+
+type ResponseItemList struct {
+	Items []ResponseItem `json:"items"`
+}
+
 func main() {
 	var username string
-	itemsList := map[string][]int{"Chocolate": {1, 50}, "Ice cream": {2, 200}, "Burger": {3, 500}, "Pizza": {4, 350}}
+
+	resp, err := http.Get("https://raw.githubusercontent.com/amirsaeed671/go-order/main/items.json")
+
+	if err != nil {
+		fmt.Println("Error making GET request:", err)
+		return
+	}
+
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+
+	var itemList ResponseItemList
+
+	json.Unmarshal(body, &itemList)
+
 	menu := utils.MakeMenu("1 Star Restaurant")
 
-	for name, val := range itemsList {
-		itm := utils.MakeItem(val[0], name, val[1])
+	for _, val := range itemList.Items {
+		itm := utils.MakeItem(val.Id, val.Name, val.Price)
 		menu.AddItems(itm)
 	}
 
@@ -40,7 +67,8 @@ func openMenuScreen(user *utils.User, menu utils.Menu) {
 	fmt.Println("=======================")
 	fmt.Print("\nFor exit press 0\n")
 	fmt.Print("For order press 1\n")
-	fmt.Print("For balance enquiry press 2\n\n")
+	fmt.Print("For balance enquiry press 2\n")
+	fmt.Print("For adding balance 3\n\n")
 	fmt.Println("=======================")
 
 	fmt.Scan(&screenSelection)
@@ -50,6 +78,8 @@ func openMenuScreen(user *utils.User, menu utils.Menu) {
 		openOrderMenu(user, menu, &order)
 	} else if screenSelection == 2 {
 		openUserManagementMenu(user, menu)
+	} else if screenSelection == 3 {
+		addBalance(user, menu)
 	} else if screenSelection == 0 {
 		fmt.Println("Exiting the program. Goodbye!")
 		os.Exit(0)
@@ -64,8 +94,6 @@ func openOrderMenu(user *utils.User, menu utils.Menu, order *utils.Order) {
 
 	var option int
 	fmt.Scan(&option)
-
-	fmt.Println(option, "************")
 
 	if option == 0 {
 		order.PlaceOrder(user)
@@ -93,5 +121,16 @@ func openOrderMenu(user *utils.User, menu utils.Menu, order *utils.Order) {
 
 func openUserManagementMenu(user *utils.User, menu utils.Menu) {
 	user.ShowMyBalance()
+	openMenuScreen(user, menu)
+}
+
+func addBalance(user *utils.User, menu utils.Menu) {
+	user.ShowMyBalance()
+	fmt.Println("Enter the amount you want to add to your balance")
+
+	var amount int
+	fmt.Scan(&amount)
+
+	user.AddBalance(amount)
 	openMenuScreen(user, menu)
 }
