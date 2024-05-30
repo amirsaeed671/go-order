@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "Chocolate",
+      "price": 50
+    },
+    {
+      "id": 2,
+      "name": "Ice cream",
+      "price": 200
+    },
+    {
+      "id": 3,
+      "name": "Burger",
+      "price": 500
+    },
+    {
+      "id": 4,
+      "name": "Pizza",
+      "price": 350
+    }
+  ]
+}
